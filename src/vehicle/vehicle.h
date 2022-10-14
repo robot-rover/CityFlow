@@ -103,6 +103,7 @@ namespace CityFlow {
         int priority;
         std::string id;
         double enterTime;
+        double waitTime;
 
         Engine *engine;
 
@@ -229,6 +230,8 @@ namespace CityFlow {
         Drivable *getChangedDrivable() const;
 
         double getEnterTime() const { return enterTime; }
+
+        double getWaitTime() const { return waitTime; }
 
         bool isEnd() const { return controllerInfo.end; }
 

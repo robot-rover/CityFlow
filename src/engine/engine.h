@@ -74,7 +74,7 @@ namespace CityFlow {
         void planLaneChange();
 
 
-        void threadController(std::set<Vehicle *> &vehicles, 
+        void threadController(std::set<Vehicle *> &vehicles,
                               std::vector<Road *> &roads,
                               std::vector<Intersection *> &intersections,
                               std::vector<Drivable *> &drivables);
@@ -159,6 +159,10 @@ namespace CityFlow {
         double getCurrentTime() const;
 
         double getAverageTravelTime() const;
+        double getTotalTravelTime() const;
+
+        double getAverageWaitingTime() const;
+        double getTotalWaitingTime() const;
 
         void setTrafficLightPhase(const std::string &id, int phaseIndex);
 
@@ -169,7 +173,7 @@ namespace CityFlow {
         void setVehicleSpeed(const std::string &id, double speed);
 
         void setRandomSeed(int seed) { rnd.seed(seed); }
-        
+
         void reset(bool resetRnd = false);
 
         // archive

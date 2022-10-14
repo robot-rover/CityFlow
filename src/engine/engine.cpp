@@ -250,7 +250,7 @@ namespace CityFlow {
 
     }
 
-    void Engine::threadController(std::set<Vehicle *> &vehicles, 
+    void Engine::threadController(std::set<Vehicle *> &vehicles,
                                   std::vector<Road *> &roads,
                                   std::vector<Intersection *> &intersections,
                                   std::vector<Drivable *> &drivables) {
@@ -403,7 +403,7 @@ namespace CityFlow {
         startBarrier.wait();
         std::vector<std::pair<Vehicle *, double>> buffer;
         for (auto vehicle: vehicles)
-            if (vehicle->isRunning()) 
+            if (vehicle->isRunning())
                 vehicleControl(*vehicle, buffer);
         {
             std::lock_guard<std::mutex> guard(lock);
@@ -680,14 +680,43 @@ namespace CityFlow {
     }
 
     double Engine::getAverageTravelTime() const {
-        double tt = cumulativeTravelTime;
-        int n = finishedVehicleCnt;
+        double tt = 0;
+        int n = 0;
         for (auto &vehicle_pair : vehiclePool) {
             auto &vehicle = vehicle_pair.second.first;
             tt += getCurrentTime() - vehicle->getEnterTime();
             n++;
         }
         return n == 0 ? 0 : tt / n;
+    }
+
+    double Engine::getTotalTravelTime() const {
+        double tt = 0;
+        for (auto &vehicle_pair : vehiclePool) {
+            auto &vehicle = vehicle_pair.second.first;
+            tt += getCurrentTime() - vehicle->getEnterTime();
+        }
+        return tt;
+    }
+
+    double Engine::getAverageWaitingTime() const {
+        double tt = 0;
+        int n = 0;
+        for (auto &vehicle_pair : vehiclePool) {
+            auto &vehicle = vehicle_pair.second.first;
+            tt += vehicle->getWaitTime();
+            n++;
+        }
+        return n == 0 ? 0 : tt / n;
+    }
+
+    double Engine::getTotalWaitingTime() const {
+        double tt = 0;
+        for (auto &vehicle_pair : vehiclePool) {
+            auto &vehicle = vehicle_pair.second.first;
+            tt += vehicle->getWaitTime();
+        }
+        return tt;
     }
 
     void Engine::pushVehicle(const std::map<std::string, double> &info, const std::vector<std::string> &roads) {
@@ -709,7 +738,7 @@ namespace CityFlow {
         for (auto &road: roads) routes.emplace_back(roadnet.getRoadById(road));
         auto route = std::make_shared<const Route>(routes);
         vehicleInfo.route = route;
-        
+
         Vehicle *vehicle = new Vehicle(vehicleInfo,
             "manually_pushed_" + std::to_string(manuallyPushCnt++), this);
         pushVehicle(vehicle, false);
@@ -740,7 +769,7 @@ namespace CityFlow {
         }
         saveReplay = open;
     }
-    
+
     void Engine::reset(bool resetRnd) {
         for (auto &vehiclePair : vehiclePool) delete vehiclePair.second.first;
         for (auto &pool : threadVehiclePool) pool.clear();
@@ -769,7 +798,7 @@ namespace CityFlow {
         for (auto &thread : threadPool) thread.join();
         for (auto &vehiclePair : vehiclePool) delete vehiclePair.second.first;
     }
-    
+
     void Engine::setLogFile(const std::string &jsonFile, const std::string &logFile) {
         if (!writeJsonToFile(jsonFile, jsonRoot)) {
             std::cerr << "write roadnet log file error" << std::endl;

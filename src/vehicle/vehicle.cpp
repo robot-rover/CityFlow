@@ -19,7 +19,7 @@ namespace CityFlow {
     Vehicle::Vehicle(const Vehicle &vehicle, Flow *flow)
         : vehicleInfo(vehicle.vehicleInfo), controllerInfo(this, vehicle.controllerInfo),
           laneChangeInfo(vehicle.laneChangeInfo), buffer(vehicle.buffer), priority(vehicle.priority),
-          id(vehicle.id), engine(vehicle.engine),
+          id(vehicle.id), waitTime(vehicle.waitTime), engine(vehicle.engine),
           laneChange(std::make_shared<SimpleLaneChange>(this, *vehicle.laneChange)),
           flow(flow){
         enterTime = vehicle.enterTime;
@@ -27,8 +27,8 @@ namespace CityFlow {
 
     Vehicle::Vehicle(const Vehicle &vehicle, const std::string &id, Engine *engine, Flow *flow)
         : vehicleInfo(vehicle.vehicleInfo), controllerInfo(this, vehicle.controllerInfo),
-          laneChangeInfo(vehicle.laneChangeInfo), buffer(vehicle.buffer), 
-          id(id), engine(engine), laneChange(std::make_shared<SimpleLaneChange>(this)),
+          laneChangeInfo(vehicle.laneChangeInfo), buffer(vehicle.buffer),
+          id(id), waitTime(vehicle.waitTime), engine(engine), laneChange(std::make_shared<SimpleLaneChange>(this)),
           flow(flow){
         while (engine->checkPriority(priority = engine->rnd()));
         controllerInfo.router.setVehicle(this);
@@ -37,7 +37,7 @@ namespace CityFlow {
 
     Vehicle::Vehicle(const VehicleInfo &vehicleInfo, const std::string &id, Engine *engine, Flow *flow)
         : vehicleInfo(vehicleInfo), controllerInfo(this, vehicleInfo.route, &(engine->rnd)),
-          id(id), engine(engine), laneChange(std::make_shared<SimpleLaneChange>(this)),
+          id(id), waitTime(0), engine(engine), laneChange(std::make_shared<SimpleLaneChange>(this)),
           flow(flow){
         controllerInfo.approachingIntersectionDistance =
             vehicleInfo.maxSpeed * vehicleInfo.maxSpeed / vehicleInfo.usualNegAcc / 2 +
@@ -117,6 +117,9 @@ namespace CityFlow {
             vehicleInfo.speed = buffer.speed;
             buffer.isSpeedSet = false;
         }
+        if (vehicleInfo.speed < 0.1) {
+            waitTime += engine->interval;
+        }
         if (buffer.isCustomSpeedSet) {
             buffer.isCustomSpeedSet = false;
         }
@@ -167,7 +170,7 @@ namespace CityFlow {
             for (int i = 0; ; ++i) {
                 drivable = getNextDrivable(i);
                 if (drivable == nullptr) return;
-                if (drivable->isLaneLink()) { // if laneLink, check all laneLink start from previous lane, because lanelinks may overlap 
+                if (drivable->isLaneLink()) { // if laneLink, check all laneLink start from previous lane, because lanelinks may overlap
                     for (auto laneLink : static_cast<LaneLink *>(drivable)->getStartLane()->getLaneLinks()) {
                         if ((candidateLeader = laneLink->getLastVehicle()) != nullptr) {
                             candidateGap = dis + candidateLeader->getDistance() - candidateLeader->getLen();

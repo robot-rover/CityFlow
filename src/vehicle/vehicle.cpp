@@ -119,6 +119,8 @@ namespace CityFlow {
         }
         if (vehicleInfo.speed < 0.1) {
             waitTime += engine->getInterval();
+        } else {
+            waitTime = 0;
         }
         if (buffer.isCustomSpeedSet) {
             buffer.isCustomSpeedSet = false;

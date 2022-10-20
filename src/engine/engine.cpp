@@ -516,6 +516,7 @@ namespace CityFlow {
     }
 
     void Engine::updateLog() {
+        std::cerr << "Updating Log" << std::endl;
         std::string result;
         for (const Vehicle* vehicle: getRunningVehicles()) {
             Point pos = vehicle->getPoint();
@@ -760,6 +761,7 @@ namespace CityFlow {
         }
         if (logOut.is_open()) logOut.close();
         logOut.open(dir + logFile);
+        std::cerr << "Opening " << (dir + logFile) << " as log file" << std::endl;
     }
 
     void Engine::setSaveReplay(bool open) {
@@ -768,6 +770,7 @@ namespace CityFlow {
             return;
         }
         saveReplay = open;
+        std::cerr << "Set Save Replay: " << saveReplay << std::endl;
     }
 
     void Engine::reset(bool resetRnd) {
